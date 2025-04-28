@@ -10,7 +10,6 @@ import datetime
 import humanize
 
 
-
 def github_token():
     netrc_info = netrc()
     token = netrc_info.authenticators("api.github.com")[0]
@@ -44,7 +43,10 @@ def analyze(owner, repo_name, branch, workflow_name=None):
     success_run = success_runs[0]
     # Fetch the failed run that failed immediately after the last successful one:
     fail_runs = workflow.get_runs(
-        branch=branch, status="failure", exclude_pull_requests=True, created=">=" + success_run.created_at.isoformat()
+        branch=branch,
+        status="failure",
+        exclude_pull_requests=True,
+        created=">=" + success_run.created_at.isoformat(),
     )
     *_, fail_run = fail_runs
     # Alternatively, use the *latest* failure:
@@ -82,8 +84,7 @@ def compare_packages(success_packages: dict, fail_packages: dict):
 
 
 def find_job(run: github.WorkflowRun.WorkflowRun, name=None, conclusion=None):
-    """ Search this WorkflowRun for a job with the given name or conclusion.
-    """
+    """Search this WorkflowRun for a job with the given name or conclusion."""
     if not name and not conclusion:
         raise ValueError("Provide either name or conclusion.")
     for job in run.jobs():
@@ -97,7 +98,9 @@ def find_job(run: github.WorkflowRun.WorkflowRun, name=None, conclusion=None):
 def save_job_log(job: github.WorkflowJob.WorkflowJob):
     now = datetime.datetime.now(datetime.UTC)
     human_readable_time = humanize.naturaltime(now - job.created_at)
-    print(f"{job.name} job ({job.conclusion} {human_readable_time} ago): {job.html_url}")
+    print(
+        f"{job.name} job ({job.conclusion} {human_readable_time} ago): {job.html_url}"
+    )
     logs_url = job.logs_url()
     # TODO: use temp files here instead of writing to cwd
     logfile = Path(f"job-{job.id}-{job.conclusion}.txt")
